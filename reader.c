@@ -57,9 +57,9 @@ int32_t shift_file_ptr(FILE* file, int32_t bytes_to_shift, bool read_type)
 	if (file == NULL) return -1;
 
 	int32_t max_shift_neg = -ftell(file);
-	int32_t max_shift_pos = get_file_len(file) - max_shift_neg;
+	int32_t max_shift_pos = get_file_len(file) + max_shift_neg;
 
-	if ((bytes_to_shift > max_shift_pos) && (bytes_to_shift < max_shift_neg)) return -1;
+	if ((bytes_to_shift > max_shift_pos) || (bytes_to_shift < max_shift_neg)) return -1;
 	
 	if (fseek(file, bytes_to_shift, SEEK_CUR) != 0) return -1;
 
