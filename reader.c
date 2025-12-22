@@ -37,11 +37,7 @@ int32_t read_hexascii_bytes(FILE* input_file, uint8_t outbuff[], uint32_t buffsi
 
 int32_t get_file_len(FILE* file)
 {
-
-	if (file == NULL)
-	{
-		return -1;
-	}
+	if (file == NULL) return -1;
 
 	int32_t fsize = 0;
 	int32_t fcur = ftell(file); // store current location
@@ -58,6 +54,8 @@ int32_t get_file_len(FILE* file)
 
 int32_t shift_file_ptr(FILE* file, int32_t bytes_to_shift, bool read_type)
 {
+	if (file == NULL) return -1;
+
 	int32_t max_shift_neg = -ftell(file);
 	int32_t max_shift_pos = get_file_len(file) - max_shift_neg;
 
