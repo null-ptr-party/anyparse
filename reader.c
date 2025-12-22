@@ -14,10 +14,10 @@ int32_t read_bytes(FILE* input_file, uint8_t outbuff[], uint32_t buffsize, uint3
 
 int32_t read_hexascii_bytes(FILE* input_file, uint8_t outbuff[], uint32_t buffsize, uint32_t bytes_to_read)
 {
-	if ((input_file == NULL) || (bytes_to_read >= buffsize)) return -1; // check file pointer validity and num bytes.
+	if ((input_file == NULL) || (bytes_to_read > buffsize)) return -1; // check file pointer validity and num bytes.
 	
 	uint32_t byte = 0;
-	int32_t bytes_read;
+	int32_t bytes_read = 0;
 
 	for (uint32_t idx = 0; idx < bytes_to_read; idx++)
 	{
@@ -37,13 +37,14 @@ int32_t read_hexascii_bytes(FILE* input_file, uint8_t outbuff[], uint32_t buffsi
 
 int32_t get_file_len(FILE* file)
 {
-	int32_t fsize = 0;
-	int32_t fcur = ftell(file); // store current location
 
 	if (file == NULL)
 	{
 		return -1;
 	}
+
+	int32_t fsize = 0;
+	int32_t fcur = ftell(file); // store current location
 
 	if (fseek(file, 0, SEEK_END) != 0)
 	{
