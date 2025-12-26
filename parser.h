@@ -68,6 +68,8 @@ int32_t init_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes);
 int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[], const char fieldname[], uint8_t converter_select, uint8_t dtype, double sf, bool whend);
 // get field config by index.
 struct field_cfg* field_cfg_by_idx(struct msg_cfg* cfg, uint32_t field_idx);
+// remove specific field by index.
+int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx);
 // get parsed field by index
 struct parsed_field* pfield_by_idx(struct msg_cfg* cfg, uint32_t field_idx);
 // get field config by name

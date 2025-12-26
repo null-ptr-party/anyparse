@@ -170,6 +170,40 @@ struct parsed_field* pfield_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 	return pfield_ptr;
 }
 
+int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
+{
+	if (field_idx >= cfg->num_fields) return 1;
+
+	struct parsed_field* pfield_ptr = cfg->first_pfield;
+	struct parsed_field* prev_pfield_ptr = NULL;
+	struct field_cfg* field_cfg_ptr = cfg->first_field;
+	struct field_cfg* prev_field_cfg_ptr = NULL;
+
+
+	for (uint32_t idx = 0; idx < field_idx; idx++)
+	{
+		prev_pfield_ptr = pfield_ptr;
+		pfield_ptr = pfield_ptr->next_field;
+
+		prev_field_cfg_ptr = field_cfg_ptr;
+		field_cfg_ptr = field_cfg_ptr->next_field;
+
+		if ((pfield_ptr == NULL) || (field_cfg_ptr == NULL)) return 1;
+	}
+
+
+	if (field_idx > 0)
+	{
+		prev_field_cfg_ptr = field_cfg_ptr->next_field;
+		prev_pfield_ptr = pfield_ptr->next_field;
+	}
+
+	free(field_cfg_ptr);
+	free(pfield_ptr);
+
+	cfg->num_fields--;
+}
+
 struct field_cfg* get_field_cfg_by_name(struct msg_cfg* cfg, const char fieldname[])
 {
 	uint32_t num_fields = cfg->num_fields;
