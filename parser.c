@@ -67,6 +67,7 @@ int32_t parse_from_file(FILE* ftoparse, FILE* fparsed, struct msg_cfg* cfg, bool
 	uint8_t bytes_per_message = cfg->num_bytes;
 	while (ftell(ftoparse) <= file_len) // parse up to EOF
 	{
+		prog_bar((uint32_t)ftell(ftoparse), (uint32_t)file_len, 100000);
 		if (read_type == 1)
 		{
 			if (read_hexascii_bytes(ftoparse, bindata_buff, BINDATABUFF_SIZE, bytes_per_message) != bytes_per_message) break;
