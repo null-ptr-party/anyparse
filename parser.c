@@ -179,7 +179,6 @@ struct field_cfg* get_field_cfg_by_name(struct msg_cfg* cfg, const char fieldnam
 	{
 		if (field_cfg == NULL) return NULL;
 		if ((strcmp(field_cfg->fieldname, fieldname) == 0)) return field_cfg;
-		field_cfg = field_cfg->next_field; // assign pointer to next cfg.
 	}
 
 	printf("No field cfg %s found\n", fieldname);
@@ -195,7 +194,6 @@ struct parsed_field* get_pfield_by_name(struct msg_cfg* cfg, const char fieldnam
 	{
 		if (pfield == NULL) return NULL;
 		if ((strcmp(pfield->fieldname, fieldname) == 0)) return pfield;
-		pfield = pfield->next_field; // assign pointer to next cfg.
 	}
 
 	printf("No field cfg %s found\n", fieldname);
