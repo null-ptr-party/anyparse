@@ -220,6 +220,8 @@ int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 
 	// decrement number of fields.
 	cfg->num_fields--;
+
+	return 0;
 }
 
 struct field_cfg* get_field_cfg_by_name(struct msg_cfg* cfg, const char fieldname[])
