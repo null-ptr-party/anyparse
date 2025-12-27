@@ -110,6 +110,8 @@ int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[], const 
 	struct parsed_field* new_pfield = (struct parsed_field*)malloc(sizeof(struct parsed_field)); // 
 	if ((new_field == NULL) || (new_pfield == NULL))
 	{
+		free(new_field);
+		free(new_pfield);
 		printf("Memory allocation failed\n");
 		return 1;
 	}
