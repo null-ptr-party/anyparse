@@ -39,12 +39,6 @@ struct field_cfg {
 	struct field_cfg* next_field;
 };
 
-struct parsed_msg {
-	char messagename[MAX_FIELDNAME_LEN];
-	uint8_t num_fields;
-	struct parsed_field* field_ptr;
-};
-
 // parsed field struct
 struct parsed_field {
 	char fieldname[MAX_FIELDNAME_LEN];
