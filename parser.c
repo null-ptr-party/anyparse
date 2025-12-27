@@ -191,16 +191,34 @@ int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 		if ((pfield_ptr == NULL) || (field_cfg_ptr == NULL)) return 1;
 	}
 
-
-	if (field_idx > 0)
+	if (cfg->num_fields > 1)
 	{
-		prev_field_cfg_ptr = field_cfg_ptr->next_field;
-		prev_pfield_ptr = pfield_ptr->next_field;
+		// case for more than one field
+		if (field_idx == 0)
+		{	// if first field, need to re-link using 
+			// config pointer to first field.
+			cfg->first_field = field_cfg_ptr->next_field;
+			cfg->first_pfield = pfield_ptr->next_field;
+		}
+		else if (field_idx > 0)
+		{	// if fields greater than 0, we need to re-link
+			// previous field with next.
+			prev_field_cfg_ptr = field_cfg_ptr->next_field;
+			prev_pfield_ptr = pfield_ptr->next_field;
+		}
+	}
+	else
+	{	// if only one field to delete. NULL out
+		// first field.
+		cfg->first_field = NULL;
+		cfg->first_pfield = NULL;
 	}
 
+	// free allocated memory for field.
 	free(field_cfg_ptr);
 	free(pfield_ptr);
 
+	// decrement number of fields.
 	cfg->num_fields--;
 }
 
