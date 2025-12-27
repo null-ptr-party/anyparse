@@ -170,6 +170,70 @@ struct parsed_field* pfield_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 	return pfield_ptr;
 }
 
+int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx, 
+						const uint8_t bitmask[], const char fieldname[],
+						uint8_t converter_select, uint8_t dtype,
+						double sf, bool whend)
+{
+	// Highest index a field can be added is n = num_fields (append)
+	// anything higher should return error.
+	if (field_idx > cfg->num_fields) return 1;
+
+	struct parsed_field* pfield_ptr = cfg->first_pfield;
+	struct parsed_field* prev_pfield_ptr = NULL;
+	struct field_cfg* field_cfg_ptr = cfg->first_field;
+	struct field_cfg* prev_field_cfg_ptr = NULL;
+
+	for (uint32_t idx = 0; idx < field_idx; idx++)
+	{
+		prev_pfield_ptr = pfield_ptr;
+		pfield_ptr = pfield_ptr->next_field;
+
+		prev_field_cfg_ptr = field_cfg_ptr;
+		field_cfg_ptr = field_cfg_ptr->next_field;
+
+		if ((pfield_ptr == NULL) || (field_cfg_ptr == NULL)) return 1;
+	}
+
+	struct field_cfg* new_field = (struct field_cfg*)malloc(sizeof(struct field_cfg)); // allocate memory for new struct.
+	struct parsed_field* new_pfield = (struct parsed_field*)malloc(sizeof(struct parsed_field)); // allocate memory new pfield.
+
+	if ((new_field == NULL) || (new_pfield == NULL))
+	{	// free memory just in case one was allocated successfully.
+		free(new_field);
+		free(new_pfield);
+		// return error
+		return 1;
+	}
+
+	if (field_idx == 0)
+	{	// case for adding field in idx = 0
+		// cfg points to new fields
+		cfg->first_field = new_field;
+		cfg->first_pfield = new_pfield;
+		// new field points to what was previously idx = field_idx.
+		new_field->next_field = field_cfg_ptr;
+		new_pfield->next_field = pfield_ptr;
+	}
+	else if (field_idx == cfg->num_fields)
+	{ // case for field being appended to end.
+		field_cfg_ptr->next_field = new_field;
+		pfield_ptr->next_field = new_pfield;
+	}
+	else
+	{	// all other cases
+		// previous field points to new field.
+		prev_field_cfg_ptr->next_field = new_field;
+		prev_pfield_ptr->next_field = new_pfield;
+		// new field points to what was previously idx = field_idx
+		new_field->next_field = field_cfg_ptr;
+		new_pfield->next_field = pfield_ptr;
+	}
+	cfg->num_fields--;
+	
+	return 0;
+}
+
 int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 {
 	if (field_idx >= cfg->num_fields) return 1;
@@ -226,13 +290,14 @@ int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 
 struct field_cfg* get_field_cfg_by_name(struct msg_cfg* cfg, const char fieldname[])
 {
-	uint32_t num_fields = cfg->num_fields;
 	struct field_cfg* field_cfg = cfg->first_field;
 
-	for (uint32_t idx = 0; idx < num_fields; idx++)
+	for (uint32_t idx = 0; idx < cfg->num_fields; idx++)
 	{
 		if (field_cfg == NULL) return NULL;
 		if ((strcmp(field_cfg->fieldname, fieldname) == 0)) return field_cfg;
+		// iterate and get next field_cfg
+		field_cfg = field_cfg->next_field;
 	}
 
 	printf("No field cfg %s found\n", fieldname);
@@ -241,13 +306,14 @@ struct field_cfg* get_field_cfg_by_name(struct msg_cfg* cfg, const char fieldnam
 
 struct parsed_field* get_pfield_by_name(struct msg_cfg* cfg, const char fieldname[])
 {
-	uint32_t num_fields = cfg->num_fields;
 	struct parsed_field* pfield = cfg->first_pfield;
 
-	for (uint32_t idx = 0; idx < num_fields; idx++)
+	for (uint32_t idx = 0; idx < cfg->num_fields; idx++)
 	{
 		if (pfield == NULL) return NULL;
 		if ((strcmp(pfield->fieldname, fieldname) == 0)) return pfield;
+		// iterate and get next pfield
+		pfield = pfield->next_field;
 	}
 
 	printf("No field cfg %s found\n", fieldname);
