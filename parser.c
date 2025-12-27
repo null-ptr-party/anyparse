@@ -270,8 +270,8 @@ int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 		else if (field_idx > 0)
 		{	// if fields greater than 0, we need to re-link
 			// previous field with next.
-			prev_field_cfg_ptr = field_cfg_ptr->next_field;
-			prev_pfield_ptr = pfield_ptr->next_field;
+			prev_field_cfg_ptr->next_field = field_cfg_ptr->next_field;
+			prev_pfield_ptr->next_field = pfield_ptr->next_field;
 		}
 	}
 	else
