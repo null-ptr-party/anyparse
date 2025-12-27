@@ -204,6 +204,7 @@ int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
 	{	// free memory just in case one was allocated successfully.
 		free(new_field);
 		free(new_pfield);
+		printf("Memory allocation failed\n");
 		// return error
 		return 1;
 	}
@@ -231,7 +232,7 @@ int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
 		new_field->next_field = field_cfg_ptr;
 		new_pfield->next_field = pfield_ptr;
 	}
-	cfg->num_fields--;
+	cfg->num_fields++;
 	
 	return 0;
 }
