@@ -232,6 +232,16 @@ int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
 		new_field->next_field = field_cfg_ptr;
 		new_pfield->next_field = pfield_ptr;
 	}
+	strncpy(new_field->fieldname, fieldname, MAX_FIELDNAME_LEN);
+	strncpy(new_pfield->fieldname, fieldname, MAX_FIELDNAME_LEN);
+	new_field->converter = converter_select;
+	new_field->dtype = dtype;
+	new_pfield->dtype = dtype;
+	new_field->sf = sf;
+	new_field->whend = whend;
+	memcpy(new_field->bitmask, bitmask, MAX_BITMASK_LEN_BYTES);
+	new_field->num_bits = bits_in_bitmask(new_field->bitmask, cfg->num_bytes);
+
 	cfg->num_fields++;
 	
 	return 0;
