@@ -54,7 +54,8 @@ uint64_t strip_bits(const uint8_t data_array[], const uint8_t mask_array[], uint
 int32_t parse_single_msg(const uint8_t bytes[], struct msg_cfg* msgcfg);
 // parse data from text file.
 int32_t parse_from_file(FILE* ftoparse, FILE* fparsed, struct msg_cfg* cfg, bool read_type);
-// puffer a series of messages in a buffer. TODO
+// open and parse file. 0 = readbinary, 1 = readhexascii
+int32_t open_and_parse_file(const char filetoparse[], const char outputfile[], struct msg_cfg* cfg, bool readmethod);
 /*=============================== Setup/Config Functions ======================================================*/
 // initialize message config
 int32_t init_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes);
@@ -62,6 +63,11 @@ int32_t init_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes);
 int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[], const char fieldname[], uint8_t converter_select, uint8_t dtype, double sf, bool whend);
 // get field config by index.
 struct field_cfg* field_cfg_by_idx(struct msg_cfg* cfg, uint32_t field_idx);
+// append field to end of config.
+int32_t append_field(struct msg_cfg* cfg,
+	const uint8_t bitmask[], const char fieldname[],
+	uint8_t converter_select, uint8_t dtype,
+	double sf, bool whend);
 // add field at index
 int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
 						const uint8_t bitmask[], const char fieldname[],

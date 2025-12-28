@@ -58,6 +58,36 @@ int32_t parse_single_msg(const uint8_t bytes[], struct msg_cfg* cfg)
 	return 0;
 }
 
+int32_t open_and_parse_file(const char filetoparse[], const char outputfile[], struct msg_cfg* cfg, bool readmethod)
+{
+	FILE* ftoparse = NULL;
+	FILE* fout = NULL;
+
+	if (readmethod == 1)
+	{
+		ftoparse = fopen(filetoparse, "r");
+	}
+	else
+	{
+		ftoparse = fopen(filetoparse, "rb");
+	}
+	fout = fopen(outputfile, "w");
+	
+	if (write_msg_headers(fout, cfg, 1) == 1)
+	{
+		return 1;
+	}
+	// parse but return error if issue.
+	if (parse_from_file(ftoparse, fout, cfg, readmethod) == 1)
+	{
+		return 1;
+	}
+
+	fclose(ftoparse);
+	fclose(fout);
+	return 0;
+}
+
 int32_t parse_from_file(FILE* ftoparse, FILE* fparsed, struct msg_cfg* cfg, bool read_type)
 {
 	if ((ftoparse == NULL) || (fparsed == NULL)) return 1;
@@ -95,7 +125,7 @@ int32_t init_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes)
 	cfg->first_field = NULL;
 	return 0;
 }
-// add field to message 
+// add field to message in position 0.
 int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[], const char fieldname[], uint8_t converter_select, uint8_t dtype, double sf, bool whend)
 {
 	// check for max num fields.
@@ -172,14 +202,57 @@ struct parsed_field* pfield_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 	return pfield_ptr;
 }
 
+int32_t append_field(struct msg_cfg* cfg,
+	const uint8_t bitmask[], const char fieldname[],
+	uint8_t converter_select, uint8_t dtype,
+	double sf, bool whend)
+{
+	struct parsed_field* pfield = pfield_by_idx(cfg, cfg->num_fields - 1);
+	struct field_cfg* field = field_cfg_by_idx(cfg, cfg->num_fields - 1);
+
+	if ((pfield == NULL) || (field == NULL)) return 1;
+
+	struct field_cfg* new_field = (struct field_cfg*)malloc(sizeof(struct field_cfg)); // allocate memory for new struct.
+	struct parsed_field* new_pfield = (struct parsed_field*)malloc(sizeof(struct parsed_field)); // allocate memory new pfield.
+
+	if ((new_field == NULL) || (new_pfield == NULL))
+	{	// free memory just in case one was allocated successfully.
+		free(new_field);
+		free(new_pfield);
+		printf("Memory allocation failed\n");
+		// return error
+		return 1;
+	}
+
+	// link last field to new field.
+	pfield->next_field = new_pfield;
+	field->next_field = new_field;
+
+	// copy data.
+	strncpy(new_field->fieldname, fieldname, MAX_FIELDNAME_LEN);
+	strncpy(new_pfield->fieldname, fieldname, MAX_FIELDNAME_LEN);
+	new_field->converter = converter_select;
+	new_field->dtype = dtype;
+	new_pfield->dtype = dtype;
+	new_field->sf = sf;
+	new_field->whend = whend;
+	memcpy(new_field->bitmask, bitmask, MAX_BITMASK_LEN_BYTES);
+	new_field->num_bits = bits_in_bitmask(new_field->bitmask, cfg->num_bytes);
+
+	// increment number of fields.
+	cfg->num_fields++;
+
+	return 0;
+}
+
 int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx, 
 						const uint8_t bitmask[], const char fieldname[],
 						uint8_t converter_select, uint8_t dtype,
 						double sf, bool whend)
 {
-	// Highest index a field can be added is n = num_fields (append)
+	// Highest index a field can be added is n = num_fields-1
 	// anything higher should return error.
-	if (field_idx > cfg->num_fields) return 1;
+	if (field_idx >= cfg->num_fields) return 1;
 
 	struct parsed_field* pfield_ptr = cfg->first_pfield;
 	struct parsed_field* prev_pfield_ptr = NULL;
@@ -194,7 +267,8 @@ int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
 		prev_field_cfg_ptr = field_cfg_ptr;
 		field_cfg_ptr = field_cfg_ptr->next_field;
 
-		if ((pfield_ptr == NULL) || (field_cfg_ptr == NULL)) return 1;
+		// if any field but the last field is null, return error.
+		if (((pfield_ptr == NULL) || (field_cfg_ptr == NULL))) return 1;
 	}
 
 	struct field_cfg* new_field = (struct field_cfg*)malloc(sizeof(struct field_cfg)); // allocate memory for new struct.
@@ -208,7 +282,6 @@ int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
 		// return error
 		return 1;
 	}
-
 	if (field_idx == 0)
 	{	// case for adding field in idx = 0
 		// cfg points to new fields
@@ -217,11 +290,6 @@ int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
 		// new field points to what was previously idx = field_idx.
 		new_field->next_field = field_cfg_ptr;
 		new_pfield->next_field = pfield_ptr;
-	}
-	else if (field_idx == cfg->num_fields)
-	{ // case for field being appended to end.
-		field_cfg_ptr->next_field = new_field;
-		pfield_ptr->next_field = new_pfield;
 	}
 	else
 	{	// all other cases
@@ -232,6 +300,7 @@ int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
 		new_field->next_field = field_cfg_ptr;
 		new_pfield->next_field = pfield_ptr;
 	}
+
 	strncpy(new_field->fieldname, fieldname, MAX_FIELDNAME_LEN);
 	strncpy(new_pfield->fieldname, fieldname, MAX_FIELDNAME_LEN);
 	new_field->converter = converter_select;
@@ -255,7 +324,6 @@ int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 	struct parsed_field* prev_pfield_ptr = NULL;
 	struct field_cfg* field_cfg_ptr = cfg->first_field;
 	struct field_cfg* prev_field_cfg_ptr = NULL;
-
 
 	for (uint32_t idx = 0; idx < field_idx; idx++)
 	{
