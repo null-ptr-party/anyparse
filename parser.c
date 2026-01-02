@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 uint64_t strip_bits(const uint8_t data_array[], const uint8_t mask_array[], uint32_t num_bytes, bool whend)
 {
@@ -345,7 +346,7 @@ int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 			cfg->first_field = field_cfg_ptr->next_field;
 			cfg->first_pfield = pfield_ptr->next_field;
 		}
-		else if (field_idx > 0)
+		else if(field_idx > 0)
 		{	// if fields greater than 0, we need to re-link
 			// previous field with next.
 			prev_field_cfg_ptr->next_field = field_cfg_ptr->next_field;
@@ -548,4 +549,53 @@ uint32_t bits_in_bitmask(const uint8_t bitmask[], uint32_t num_bytes)
 	}
 
 	return bitct;
+}
+
+int32_t bitmask_from_cfgstr(char cfg_str[], uint8_t bitmask[MAX_BITMASK_LEN_BYTES])
+{	// cfgstring format is [byte0,byte1,byten] [startbit0,startbit1,startbitn] [stopbit0,stopbit1,stopbitn]
+	uint32_t len = strlen(cfg_str);
+	if (strlen(cfg_str) >= MAX_BITMASK_STR_LEN) return 1;
+
+	uint32_t parsed_num_buff[3*MAX_BITMASK_LEN_BYTES] = { 0 };
+	uint32_t buff_idx = 0;
+	char* const firstchar_ptr = cfg_str; // get pointer to first char of string.
+	char* tknptr = NULL;
+	tknptr = strtok(cfg_str, "[,]");
+
+	while ((tknptr != NULL) || (tknptr - firstchar_ptr) >= len) // this makes sure we dont overrun
+	{	// this loop gets all entries
+
+		if (isdigit(*tknptr) != 0)
+		{	// if digit found after delimiter, scanstring.
+			sscanf(tknptr, "%u", &parsed_num_buff[buff_idx]);
+			buff_idx++;
+		}
+	tknptr = strtok(NULL, "[,]"); // get next delimiter.
+	}
+
+	if (((buff_idx % 3) != 0) || (buff_idx == 0)) return 1; // need sets of 3 to build bitmask
+	uint32_t byte_idx = 0, strtbit = 0, stpbit = 0;
+	uint32_t num_bytes = buff_idx / 3;
+	printf("numbytes:%u\n", num_bytes);
+
+	for (uint32_t idx = 0; idx < num_bytes; idx++)
+	{
+		byte_idx = parsed_num_buff[idx];
+		if (byte_idx >= num_bytes) return 1; // byte index cannot exceed num bytes.
+
+		strtbit = parsed_num_buff[idx+num_bytes];
+		stpbit = parsed_num_buff[idx+2*num_bytes];
+		if ((strtbit > 7) || (stpbit > 7)) return 1; // cant exceed num bits in byte
+
+		if (strtbit == 0)
+		{
+			bitmask[byte_idx] = MASK(stpbit);
+		}
+		else
+		{
+			bitmask[byte_idx] = MASK(stpbit) - MASK((strtbit - 1));
+		}
+	}
+
+	return 0;
 }

@@ -17,6 +17,7 @@
 #define RESULT_IS_FLOAT 1
 #define MSGBUFF_SIZE 1024
 #define BINDATABUFF_SIZE 1024
+#define MAX_BITMASK_STR_LEN 500
 
 // struct defs
 struct msg_cfg {
@@ -93,5 +94,7 @@ int32_t parsed_msg_to_file(FILE* output_file, struct msg_cfg* cfg, uint8_t newli
 /*=============================== Utilities ===========================================================*/
 // counts the number of bits in a bitmask array
 uint32_t bits_in_bitmask(const uint8_t bitmask[], uint32_t num_bytes);
+// create bitmask from string in fmt: [byte0,byte1,byten] [startbit0,startbit1,startbitn] [stopbit0,stopbit1,stopbitn]
+int32_t bitmask_from_cfgstr(char cfg_str[], uint8_t bitmask[MAX_BITMASK_LEN_BYTES]);
 
 #endif
