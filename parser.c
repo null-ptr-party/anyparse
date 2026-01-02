@@ -575,11 +575,12 @@ int32_t bitmask_from_cfgstr(char cfg_str[], uint8_t bitmask[MAX_BITMASK_LEN_BYTE
 
 	if (((buff_idx % 3) != 0) || (buff_idx == 0)) return 1; // need sets of 3 to build bitmask
 	uint32_t byte_idx = 0, strtbit = 0, stpbit = 0;
-	uint32_t num_bytes = buff_idx / 3;
+	uint32_t num_bytes = buff_idx / 3; // num bytes to parse.
 
 	for (uint32_t idx = 0; idx < num_bytes; idx++)
 	{
 		byte_idx = parsed_num_buff[idx];
+		if (byte_idx >= MAX_BITMASK_LEN_BYTES) return 1;
 
 		strtbit = parsed_num_buff[idx+num_bytes];
 		stpbit = parsed_num_buff[idx+2*num_bytes];
