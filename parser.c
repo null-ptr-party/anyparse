@@ -581,10 +581,12 @@ int32_t bitmask_from_cfgstr(char cfg_str[], uint8_t bitmask[MAX_BITMASK_LEN_BYTE
 	for (uint32_t idx = 0; idx < num_bytes; idx++)
 	{
 		byte_idx = parsed_num_buff[idx];
-		if (byte_idx >= num_bytes) return 1; // byte index cannot exceed num bytes.
 
 		strtbit = parsed_num_buff[idx+num_bytes];
 		stpbit = parsed_num_buff[idx+2*num_bytes];
+		printf("byte:%u\n", byte_idx);
+		printf("startbit:%u\n", strtbit);
+		printf("startbit:%u\n", stpbit);
 		if ((strtbit > 7) || (stpbit > 7)) return 1; // cant exceed num bits in byte
 
 		if (strtbit == 0)
