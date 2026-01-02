@@ -564,7 +564,6 @@ int32_t bitmask_from_cfgstr(char cfg_str[], uint8_t bitmask[MAX_BITMASK_LEN_BYTE
 
 	while ((tknptr != NULL) || (tknptr - firstchar_ptr) >= len) // this makes sure we dont overrun
 	{	// this loop gets all entries
-
 		if (isdigit(*tknptr) != 0)
 		{	// if digit found after delimiter, scanstring.
 			sscanf(tknptr, "%u", &parsed_num_buff[buff_idx]);
@@ -588,11 +587,11 @@ int32_t bitmask_from_cfgstr(char cfg_str[], uint8_t bitmask[MAX_BITMASK_LEN_BYTE
 
 		if (strtbit == 0)
 		{
-			bitmask[byte_idx] = MASK(stpbit);
+			bitmask[byte_idx] = (uint8_t)MASK(stpbit);
 		}
 		else
 		{
-			bitmask[byte_idx] = MASK(stpbit) - MASK((strtbit - 1));
+			bitmask[byte_idx] = (uint8_t)(MASK(stpbit) - MASK((strtbit - 1)));
 		}
 	}
 
