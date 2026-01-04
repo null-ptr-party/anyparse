@@ -51,7 +51,7 @@ int32_t get_file_len(FILE* file)
 	return fsize;
 }
 
-int32_t shift_file_ptr(FILE* file, int32_t bytes_to_shift, bool read_type)
+int32_t shift_file_ptr(FILE* file, int32_t bytes_to_shift)
 {
 	if (file == NULL) return -1;
 
