@@ -127,7 +127,7 @@ int32_t init_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes)
 	return 0;
 }
 // add field to message in position 0.
-int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[], const char fieldname[], uint8_t converter_select, uint8_t dtype, double sf, bool whend)
+int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[MAX_BITMASK_LEN_BYTES], const char fieldname[], uint8_t converter_select, uint8_t dtype, double sf, bool whend)
 {
 	// check for max num fields.
 	if (cfg->num_fields >= MAX_NUM_FIELDS)
@@ -208,10 +208,16 @@ int32_t append_field(struct msg_cfg* cfg,
 	uint8_t converter_select, uint8_t dtype,
 	double sf, bool whend)
 {
-	struct parsed_field* pfield = pfield_by_idx(cfg, cfg->num_fields - 1);
-	struct field_cfg* field = field_cfg_by_idx(cfg, cfg->num_fields - 1);
+	struct parsed_field* pfield = NULL;
+	struct field_cfg* field = NULL;
 
-	if ((pfield == NULL) || (field == NULL)) return 1;
+	if (cfg->num_fields != 0)
+	{	// if more than 0 fields, get last field.
+		pfield = pfield_by_idx(cfg, cfg->num_fields - 1);
+		field = field_cfg_by_idx(cfg, cfg->num_fields - 1);
+
+		if ((pfield == NULL) || (field == NULL)) return 1;
+	}
 
 	struct field_cfg* new_field = (struct field_cfg*)malloc(sizeof(struct field_cfg)); // allocate memory for new struct.
 	struct parsed_field* new_pfield = (struct parsed_field*)malloc(sizeof(struct parsed_field)); // allocate memory new pfield.
@@ -225,9 +231,18 @@ int32_t append_field(struct msg_cfg* cfg,
 		return 1;
 	}
 
-	// link last field to new field.
-	pfield->next_field = new_pfield;
-	field->next_field = new_field;
+	if (cfg->num_fields == 0)
+	{
+		cfg->first_field = new_field;
+		cfg->first_pfield = new_pfield;
+	}
+	else
+	{
+		// link last field to new field.
+		pfield->next_field = new_pfield;
+		field->next_field = new_field;
+	}
+
 
 	// copy data.
 	strncpy(new_field->fieldname, fieldname, MAX_FIELDNAME_LEN);
@@ -247,7 +262,7 @@ int32_t append_field(struct msg_cfg* cfg,
 }
 
 int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx, 
-						const uint8_t bitmask[], const char fieldname[],
+						const uint8_t bitmask[MAX_BITMASK_LEN_BYTES], const char fieldname[],
 						uint8_t converter_select, uint8_t dtype,
 						double sf, bool whend)
 {
@@ -486,31 +501,31 @@ int32_t parsed_msg_to_file(FILE* output_file, struct msg_cfg* cfg, uint8_t newli
 	if ((output_file == NULL) || (cfg == NULL)) return 1;
 
 	uint8_t dtype = 0;
-	struct parsed_field* field_ptr = cfg->first_pfield;
-	if (field_ptr == NULL) return 1;
+	struct parsed_field* pfield_ptr = cfg->first_pfield;
+	if (pfield_ptr == NULL) return 1;
 
-	for (uint32_t idx = 0; (field_ptr != NULL) && (idx < cfg->num_fields); idx++, field_ptr = field_ptr->next_field)
+	for (uint32_t idx = 0; (pfield_ptr != NULL) && (idx < cfg->num_fields); idx++, pfield_ptr = pfield_ptr->next_field)
 	{
-		dtype = field_ptr->dtype;
+		dtype = pfield_ptr->dtype;
 
 		switch (dtype)
 		{
 			case DTYPE_OUT_INT:
-				fprintf(output_file, "%lld", field_ptr->parsed_val.int_result);
+				fprintf(output_file, "%lld", pfield_ptr->parsed_val.int_result);
 				break;
 
 			case DTYPE_OUT_FLOAT:
-				fprintf(output_file, "%lf", field_ptr->parsed_val.float_result);
+				fprintf(output_file, "%lf", pfield_ptr->parsed_val.float_result);
 				break;
 
 			case DTYPE_OUT_CHAR:
-				for (uint32_t idx = 0; idx < 4; idx++)
-				{
-					fprintf(output_file, "%c", field_ptr->parsed_val.char_result[idx]);
-				}
-
+				fprintf(output_file, "%c", pfield_ptr->parsed_val.char_result[0]);
 				break;
-			
+
+			case DTYPE_OUT_UINT:
+				fprintf(output_file, "%llu", pfield_ptr->parsed_val.uint_result);
+				break;
+
 			default:
 				;
 		}
