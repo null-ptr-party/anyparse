@@ -88,6 +88,7 @@ union parsed_result read_ieee_fp(uint64_t raw_bits, uint8_t num_bits, uint8_t dt
 	/* this is a weird one. Since typecasting a uint as a double changes the value of the bits
 	what we have to do here is "fool" C into looking at the raw bits as ieee type. We can do this
 	by typcasting a pointer. Pretty cool*/
+	(void)dtype_out; // param not used in this function. only kept to maintain call signature. 
 
 	union parsed_result result = { .int_result = 0 };
 
