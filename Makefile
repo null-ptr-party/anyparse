@@ -14,4 +14,4 @@ build:
 
 clean:
 	echo "Removing .bin file..."
-	rm -f *.bin
+	rm -f *.dll
