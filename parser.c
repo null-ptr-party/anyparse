@@ -53,7 +53,7 @@ int32_t parse_single_msg(const uint8_t bytes[], struct msg_cfg* cfg)
 		field_cfg_ptr = field_cfg_by_idx(cfg, field_num);
 		if ((field_cfg_ptr == NULL) || (pfield_ptr == NULL)) return 1;
 
-		field_data = strip_bits(bytes, field_cfg_ptr->bitmask, cfg->num_bytes, field_cfg_ptr->whend); // extract bits
+		field_data = strip_bits(bytes, field_cfg_ptr->bitmask, cfg->num_bytes, cfg->whend); // extract bits
 		pfield_ptr->parsed_val = call_parser(field_data, field_cfg_ptr->converter, field_cfg_ptr->num_bits, field_cfg_ptr->dtype, field_cfg_ptr->sf); // call converter
 	}
 	return 0;
@@ -115,19 +115,20 @@ int32_t parse_from_file(FILE* ftoparse, FILE* fparsed, struct msg_cfg* cfg, bool
 }
 /*=============================== Setup Functions ======================================================*/
 
-int32_t init_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes)
+int32_t init_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes, bool whend)
 {
 	// Note that number of fields is incremented as fields are added.
 	if (cfg == NULL) return 1;
 	strncpy(cfg->messagename, fieldname, MAX_FIELDNAME_LEN);
 	cfg->num_bytes = num_bytes;
 	cfg->num_fields = 0;
+	cfg->whend = whend;
 	cfg->first_pfield = NULL;
 	cfg->first_field = NULL;
 	return 0;
 }
 // add field to message in position 0.
-int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[MAX_BITMASK_LEN_BYTES], const char fieldname[], uint8_t converter_select, uint8_t dtype, double sf, bool whend)
+int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[MAX_BITMASK_LEN_BYTES], const char fieldname[], uint8_t converter_select, uint8_t dtype, double sf)
 {
 	// check for max num fields.
 	if (cfg->num_fields >= MAX_NUM_FIELDS)
@@ -168,7 +169,6 @@ int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[MAX_BITMA
 	new_field->dtype = dtype;
 	new_pfield->dtype = dtype;
 	new_field->sf = sf;
-	new_field->whend = whend;
 	memcpy(new_field->bitmask, bitmask, MAX_BITMASK_LEN_BYTES);
 	new_field->num_bits = bits_in_bitmask(new_field->bitmask, cfg->num_bytes);
 
@@ -206,7 +206,7 @@ struct parsed_field* pfield_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 int32_t append_field(struct msg_cfg* cfg,
 	const uint8_t bitmask[], const char fieldname[],
 	uint8_t converter_select, uint8_t dtype,
-	double sf, bool whend)
+	double sf)
 {
 	struct parsed_field* pfield = NULL;
 	struct field_cfg* field = NULL;
@@ -251,7 +251,6 @@ int32_t append_field(struct msg_cfg* cfg,
 	new_field->dtype = dtype;
 	new_pfield->dtype = dtype;
 	new_field->sf = sf;
-	new_field->whend = whend;
 	memcpy(new_field->bitmask, bitmask, MAX_BITMASK_LEN_BYTES);
 	new_field->num_bits = bits_in_bitmask(new_field->bitmask, cfg->num_bytes);
 
@@ -264,7 +263,7 @@ int32_t append_field(struct msg_cfg* cfg,
 int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx, 
 						const uint8_t bitmask[MAX_BITMASK_LEN_BYTES], const char fieldname[],
 						uint8_t converter_select, uint8_t dtype,
-						double sf, bool whend)
+						double sf)
 {
 	// Highest index a field can be added is n = num_fields-1
 	// anything higher should return error.
@@ -323,7 +322,6 @@ int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
 	new_field->dtype = dtype;
 	new_pfield->dtype = dtype;
 	new_field->sf = sf;
-	new_field->whend = whend;
 	memcpy(new_field->bitmask, bitmask, MAX_BITMASK_LEN_BYTES);
 	new_field->num_bits = bits_in_bitmask(new_field->bitmask, cfg->num_bytes);
 

@@ -24,6 +24,7 @@ struct msg_cfg {
 	char messagename[MAX_FIELDNAME_LEN];
 	uint8_t num_bytes;
 	uint8_t num_fields;
+	bool whend; // Endianness, which end.
 	struct field_cfg* first_field; // used for storing field configs.
 	struct parsed_field* first_pfield; // used for storing parsed fields.
 };
@@ -36,7 +37,6 @@ struct field_cfg {
 	uint8_t converter;
 	uint8_t dtype; // result will be typcast if not
 	double sf;
-	bool whend; // Endianness, which end.
 	struct field_cfg* next_field;
 };
 
@@ -59,21 +59,21 @@ int32_t parse_from_file(FILE* ftoparse, FILE* fparsed, struct msg_cfg* cfg, bool
 int32_t open_and_parse_file(const char filetoparse[], const char outputfile[], struct msg_cfg* cfg, bool readmethod);
 /*=============================== Setup/Config Functions ======================================================*/
 // initialize message config
-int32_t init_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes);
+int32_t init_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes, bool whend);
 // add field to message config
-int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[], const char fieldname[], uint8_t converter_select, uint8_t dtype, double sf, bool whend);
+int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[MAX_BITMASK_LEN_BYTES], const char fieldname[], uint8_t converter_select, uint8_t dtype, double sf);
 // get field config by index.
 struct field_cfg* field_cfg_by_idx(struct msg_cfg* cfg, uint32_t field_idx);
 // append field to end of config.
 int32_t append_field(struct msg_cfg* cfg,
 	const uint8_t bitmask[], const char fieldname[],
 	uint8_t converter_select, uint8_t dtype,
-	double sf, bool whend);
+	double sf);
 // add field at index
 int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
-						const uint8_t bitmask[], const char fieldname[],
+						const uint8_t bitmask[MAX_BITMASK_LEN_BYTES], const char fieldname[],
 						uint8_t converter_select, uint8_t dtype,
-						double sf, bool whend);
+						double sf);
 // remove specific field by index.
 int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx);
 // get parsed field by index
