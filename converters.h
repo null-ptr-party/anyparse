@@ -6,7 +6,8 @@
 #define DTYPE_OUT_INT 0U
 #define DTYPE_OUT_FLOAT 1U
 #define DTYPE_OUT_CHAR 2U
-#define NUM_DTYPES 3U
+#define DTYPE_OUT_UINT 3U
+#define NUM_DTYPES 4U
 
 // converter macros
 #define CONVERTER_TWOS_COMP 0U
@@ -23,6 +24,7 @@
 // union used to store parsed result which can be integer our float.
 union parsed_result {
 	int64_t int_result;
+	uint64_t uint_result;
 	double float_result;
 	char char_result[4];
 };
