@@ -17,7 +17,7 @@ uint64_t strip_bits(const uint8_t data_array[], const uint8_t mask_array[], uint
 	idx = (whend == 0) ? (num_bytes - 1) : 0; // set starting index based on endianness
 	incr = (whend == 0) ? -1 : 1; // increment in positive or negative direction based on selection
 	
-	for (; (idx < num_bytes) && (idx >= 0); idx += incr)
+	for (; (idx < num_bytes); idx += incr)
 	{	// iterate over bytes
 		mask_byte = mask_array[idx];
 		byte_stripped = mask_byte & data_array[idx]; // mask off data for this byte
@@ -125,7 +125,7 @@ int32_t write_msg_headers(FILE* output_file, struct msg_cfg* cfg, uint8_t newlin
 		if (field_cfg == NULL) return 1;
 
 		fprintf(output_file, "%s.%s", cfg->messagename, field_cfg->fieldname);
-		if ((idx < cfg->num_fields - 1))
+		if ((idx < (uint32_t)cfg->num_fields - 1))
 		{
 			fprintf(output_file, ", ");
 		}
@@ -177,7 +177,7 @@ int32_t parsed_msg_to_file(FILE* output_file, struct msg_cfg* cfg, uint8_t newli
 				;
 		}
 
-		if (idx < (cfg->num_fields - 1))
+		if (idx < (uint32_t)(cfg->num_fields - 1))
 		{
 			fprintf(output_file, ", "); // comma only between fields.
 		}
