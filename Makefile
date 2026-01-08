@@ -4,6 +4,7 @@ CFLAGS  ?=  -W -Wall -Wextra -pedantic -fPIC -shared -o
 SOURCES = parser.c \
 reader.c \
 converters.c \
+msgcfg.c
 
 OUTNAME = anyparse.dll
 	
