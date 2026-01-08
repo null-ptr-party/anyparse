@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "converters.h"
 #include "reader.h"
+#include "msgcfg.h"
 #include <stdint.h>
 #include <stdio.h> 
 #include <stdbool.h>
