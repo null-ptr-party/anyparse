@@ -1,3 +1,6 @@
+#ifndef _MSGCFG_H
+#define _MSGCFG_H
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -73,3 +76,5 @@ struct parsed_field* get_pfield_by_name(struct msg_cfg* cfg, const char fieldnam
 int32_t rm_first_field(struct msg_cfg* cfg);
 // Remove all fields from message config.
 int32_t rm_all_msg_fields(struct msg_cfg* cfg);
+
+#endif
