@@ -31,6 +31,21 @@ int32_t update_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes, 
 	return 0;
 }
 
+// update field configuration
+int32_t update_fieldcfg_by_idx(struct msg_cfg* cfg, uint32_t field_idx,
+	const uint8_t bitmask[MAX_BITMASK_LEN_BYTES], const char fieldname[],
+	uint8_t converter_select, uint8_t dtype, double sf)
+{
+	struct field_cfg* field = field_cfg_by_idx(cfg, field_idx);
+	strncpy(field->fieldname, fieldname, MAX_FIELDNAME_LEN);
+	field->converter = converter_select;
+	field->dtype = dtype;
+	field->sf = sf;
+	memcpy(field->bitmask, bitmask, MAX_BITMASK_LEN_BYTES);
+	field->num_bits = bits_in_bitmask(field->bitmask, cfg->num_bytes);
+
+	return 0;
+}
 // add field to message in position 0.
 int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[MAX_BITMASK_LEN_BYTES], const char fieldname[], uint8_t converter_select, uint8_t dtype, double sf)
 {

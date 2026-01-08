@@ -45,6 +45,10 @@ struct field_cfg {
 int32_t init_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes, bool whend);
 // update message configuration
 int32_t update_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes, bool whend);
+// update field configuration
+int32_t update_fieldcfg_by_idx(struct msg_cfg* cfg, uint32_t field_idx,
+	const uint8_t bitmask[MAX_BITMASK_LEN_BYTES], const char fieldname[],
+	uint8_t converter_select, uint8_t dtype, double sf);
 // add field to message config
 int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[MAX_BITMASK_LEN_BYTES], const char fieldname[], uint8_t converter_select, uint8_t dtype, double sf);
 // get field config by index.
