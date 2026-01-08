@@ -15,7 +15,7 @@
 #define RESULT_IS_FLOAT 1
 #define MSGBUFF_SIZE 1024
 #define BINDATABUFF_SIZE 1024
-#define MAX_BITMASK_STR_LEN 500
+#define MAX_BITMASK_STR_LEN 50
 
 // struct defs
 struct msg_cfg {
