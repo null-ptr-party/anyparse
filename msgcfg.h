@@ -78,7 +78,9 @@ int32_t rm_first_field(struct msg_cfg* cfg);
 // Remove all fields from message config.
 int32_t rm_all_msg_fields(struct msg_cfg* cfg);
 /*=============================== Utilities ===========================================================*/
+// return the number of bits in a bitmask
 uint32_t bits_in_bitmask(const uint8_t bitmask[], uint32_t num_bytes);
+// create bitmask from configstring in format: [byte1, byte2, byten] [strbit1, strtbit2, strtbit3] [stpbit1, stpbit2 stpbit3]
 int32_t bitmask_from_cfgstr(char cfg_str[], uint8_t bitmask[MAX_BITMASK_LEN_BYTES]);
 
 #endif
