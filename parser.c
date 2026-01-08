@@ -42,17 +42,15 @@ int32_t parse_single_msg(const uint8_t bytes[], struct msg_cfg* cfg)
 	// top level function with be responsible for framing and ensuring no buffer overrun
 	// copy message name to output
 	uint64_t field_data = 0;
-	struct field_cfg* field_cfg_ptr = NULL;
-	struct parsed_field* pfield_ptr = NULL;
+	struct field_cfg* field_ptr = NULL;
 
 	for (int field_num = 0; field_num < cfg->num_fields; field_num++)
 	{
-		pfield_ptr = pfield_by_idx(cfg, field_num);
-		field_cfg_ptr = field_cfg_by_idx(cfg, field_num);
-		if ((field_cfg_ptr == NULL) || (pfield_ptr == NULL)) return 1;
+		field_ptr = field_cfg_by_idx(cfg, field_num);
+		if (field_ptr == NULL) return 1;
 
-		field_data = strip_bits(bytes, field_cfg_ptr->bitmask, cfg->num_bytes, cfg->whend); // extract bits
-		pfield_ptr->parsed_val = call_parser(field_data, field_cfg_ptr->converter, field_cfg_ptr->num_bits, field_cfg_ptr->dtype, field_cfg_ptr->sf); // call converter
+		field_data = strip_bits(bytes, field_ptr->bitmask, cfg->num_bytes, cfg->whend); // extract bits
+		field_ptr->parsed_val = call_parser(field_data, field_ptr->converter, field_ptr->num_bits, field_ptr->dtype, field_ptr->sf); // call converter
 	}
 	return 0;
 }
@@ -117,14 +115,14 @@ int32_t parse_from_file(FILE* ftoparse, FILE* fparsed, struct msg_cfg* cfg, bool
 int32_t write_msg_headers(FILE* output_file, struct msg_cfg* cfg, uint8_t newlineforlast)
 {
 	if ((output_file == NULL) || (cfg == NULL)) return 1;
-	struct field_cfg* field_cfg = NULL;
+	struct field_cfg* field_ptr = NULL;
 
 	for (uint32_t idx = 0; idx < cfg->num_fields; idx++)
 	{
-		field_cfg = field_cfg_by_idx(cfg, idx);
-		if (field_cfg == NULL) return 1;
+		field_ptr = field_cfg_by_idx(cfg, idx);
+		if (field_ptr == NULL) return 1;
 
-		fprintf(output_file, "%s.%s", cfg->messagename, field_cfg->fieldname);
+		fprintf(output_file, "%s.%s", cfg->messagename, field_ptr->fieldname);
 		if ((idx < (uint32_t)cfg->num_fields - 1))
 		{
 			fprintf(output_file, ", ");
@@ -148,29 +146,29 @@ int32_t parsed_msg_to_file(FILE* output_file, struct msg_cfg* cfg, uint8_t newli
 	if ((output_file == NULL) || (cfg == NULL)) return 1;
 
 	uint8_t dtype = 0;
-	struct parsed_field* pfield_ptr = cfg->first_pfield;
-	if (pfield_ptr == NULL) return 1;
+	struct field_cfg* field_ptr = cfg->first_field;
+	if (field_ptr == NULL) return 1;
 
-	for (uint32_t idx = 0; (pfield_ptr != NULL) && (idx < cfg->num_fields); idx++, pfield_ptr = pfield_ptr->next_field)
+	for (uint32_t idx = 0; (field_ptr != NULL) && (idx < cfg->num_fields); idx++, field_ptr = field_ptr->next_field)
 	{
-		dtype = pfield_ptr->dtype;
+		dtype = field_ptr->dtype;
 
 		switch (dtype)
 		{
 			case DTYPE_OUT_INT:
-				fprintf(output_file, "%lld", pfield_ptr->parsed_val.int_result);
+				fprintf(output_file, "%lld", field_ptr->parsed_val.int_result);
 				break;
 
 			case DTYPE_OUT_FLOAT:
-				fprintf(output_file, "%lf", pfield_ptr->parsed_val.float_result);
+				fprintf(output_file, "%lf", field_ptr->parsed_val.float_result);
 				break;
 
 			case DTYPE_OUT_CHAR:
-				fprintf(output_file, "%c", pfield_ptr->parsed_val.char_result[0]);
+				fprintf(output_file, "%c", field_ptr->parsed_val.char_result[0]);
 				break;
 
 			case DTYPE_OUT_UINT:
-				fprintf(output_file, "%llu", pfield_ptr->parsed_val.uint_result);
+				fprintf(output_file, "%llu", field_ptr->parsed_val.uint_result);
 				break;
 
 			default:

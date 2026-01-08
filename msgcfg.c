@@ -16,7 +16,6 @@ int32_t init_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes, bo
 	cfg->num_bytes = num_bytes;
 	cfg->num_fields = 0;
 	cfg->whend = whend;
-	cfg->first_pfield = NULL;
 	cfg->first_field = NULL;
 	return 0;
 }
@@ -31,6 +30,7 @@ int32_t update_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes, 
 
 	return 0;
 }
+
 // add field to message in position 0.
 int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[MAX_BITMASK_LEN_BYTES], const char fieldname[], uint8_t converter_select, uint8_t dtype, double sf)
 {
@@ -43,11 +43,9 @@ int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[MAX_BITMA
 
 	// first in linked list is the message
 	struct field_cfg* new_field = (struct field_cfg*)malloc(sizeof(struct field_cfg)); // allocation memory for new struct.
-	struct parsed_field* new_pfield = (struct parsed_field*)malloc(sizeof(struct parsed_field)); // 
-	if ((new_field == NULL) || (new_pfield == NULL))
+	if (new_field == NULL)
 	{
 		free(new_field);
-		free(new_pfield);
 		printf("Memory allocation failed\n");
 		return 1;
 	}
@@ -55,23 +53,17 @@ int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[MAX_BITMA
 	if (cfg->num_fields == 0)
 	{
 		cfg->first_field = new_field;
-		cfg->first_pfield = new_pfield;
 	}
 	else
 	{
 		struct field_cfg* temp_field = cfg->first_field; // save the current pointer.
-		struct parsed_field* temp_pfield = cfg->first_pfield; // save the current pointer.
 		cfg->first_field = new_field; // new field is now first.
-		cfg->first_pfield = new_pfield;
 		new_field->next_field = temp_field; // relink after adding new field.
-		new_pfield->next_field = temp_pfield;
 	}
 
 	strncpy(new_field->fieldname, fieldname, MAX_FIELDNAME_LEN);
-	strncpy(new_pfield->fieldname, fieldname, MAX_FIELDNAME_LEN);
 	new_field->converter = converter_select;
 	new_field->dtype = dtype;
-	new_pfield->dtype = dtype;
 	new_field->sf = sf;
 	memcpy(new_field->bitmask, bitmask, MAX_BITMASK_LEN_BYTES);
 	new_field->num_bits = bits_in_bitmask(new_field->bitmask, cfg->num_bytes);
@@ -94,42 +86,25 @@ struct field_cfg* field_cfg_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 	return field_cfg_ptr;
 }
 
-struct parsed_field* pfield_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
-{
-	if (field_idx >= cfg->num_fields) return NULL;
-	struct parsed_field* pfield_ptr = cfg->first_pfield;
-
-	for (uint32_t idx = 0; idx < field_idx; idx++)
-	{
-		pfield_ptr = pfield_ptr->next_field;
-		if (pfield_ptr == NULL) return NULL;
-	}
-	return pfield_ptr;
-}
-
 int32_t append_field(struct msg_cfg* cfg,
 	const uint8_t bitmask[], const char fieldname[],
 	uint8_t converter_select, uint8_t dtype,
 	double sf)
 {
-	struct parsed_field* pfield = NULL;
 	struct field_cfg* field = NULL;
 
 	if (cfg->num_fields != 0)
 	{	// if more than 0 fields, get last field.
-		pfield = pfield_by_idx(cfg, cfg->num_fields - 1);
 		field = field_cfg_by_idx(cfg, cfg->num_fields - 1);
 
-		if ((pfield == NULL) || (field == NULL)) return 1;
+		if (field == NULL) return 1;
 	}
 
 	struct field_cfg* new_field = (struct field_cfg*)malloc(sizeof(struct field_cfg)); // allocate memory for new struct.
-	struct parsed_field* new_pfield = (struct parsed_field*)malloc(sizeof(struct parsed_field)); // allocate memory new pfield.
 
-	if ((new_field == NULL) || (new_pfield == NULL))
+	if (new_field == NULL)
 	{	// free memory just in case one was allocated successfully.
 		free(new_field);
-		free(new_pfield);
 		printf("Memory allocation failed\n");
 		// return error
 		return 1;
@@ -138,22 +113,18 @@ int32_t append_field(struct msg_cfg* cfg,
 	if (cfg->num_fields == 0)
 	{
 		cfg->first_field = new_field;
-		cfg->first_pfield = new_pfield;
 	}
 	else
 	{
 		// link last field to new field.
-		pfield->next_field = new_pfield;
 		field->next_field = new_field;
 	}
 
 
 	// copy data.
 	strncpy(new_field->fieldname, fieldname, MAX_FIELDNAME_LEN);
-	strncpy(new_pfield->fieldname, fieldname, MAX_FIELDNAME_LEN);
 	new_field->converter = converter_select;
 	new_field->dtype = dtype;
-	new_pfield->dtype = dtype;
 	new_field->sf = sf;
 	memcpy(new_field->bitmask, bitmask, MAX_BITMASK_LEN_BYTES);
 	new_field->num_bits = bits_in_bitmask(new_field->bitmask, cfg->num_bytes);
@@ -173,30 +144,23 @@ int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
 	// anything higher should return error.
 	if (field_idx >= cfg->num_fields) return 1;
 
-	struct parsed_field* pfield_ptr = cfg->first_pfield;
-	struct parsed_field* prev_pfield_ptr = NULL;
 	struct field_cfg* field_cfg_ptr = cfg->first_field;
 	struct field_cfg* prev_field_cfg_ptr = NULL;
 
 	for (uint32_t idx = 0; idx < field_idx; idx++)
 	{
-		prev_pfield_ptr = pfield_ptr;
-		pfield_ptr = pfield_ptr->next_field;
-
 		prev_field_cfg_ptr = field_cfg_ptr;
 		field_cfg_ptr = field_cfg_ptr->next_field;
 
 		// if any field but the last field is null, return error.
-		if (((pfield_ptr == NULL) || (field_cfg_ptr == NULL))) return 1;
+		if (field_cfg_ptr == NULL) return 1;
 	}
 
 	struct field_cfg* new_field = (struct field_cfg*)malloc(sizeof(struct field_cfg)); // allocate memory for new struct.
-	struct parsed_field* new_pfield = (struct parsed_field*)malloc(sizeof(struct parsed_field)); // allocate memory new pfield.
 
-	if ((new_field == NULL) || (new_pfield == NULL))
+	if (new_field == NULL)
 	{	// free memory just in case one was allocated successfully.
 		free(new_field);
-		free(new_pfield);
 		printf("Memory allocation failed\n");
 		// return error
 		return 1;
@@ -205,26 +169,20 @@ int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
 	{	// case for adding field in idx = 0
 		// cfg points to new fields
 		cfg->first_field = new_field;
-		cfg->first_pfield = new_pfield;
 		// new field points to what was previously idx = field_idx.
 		new_field->next_field = field_cfg_ptr;
-		new_pfield->next_field = pfield_ptr;
 	}
 	else
 	{	// all other cases
 		// previous field points to new field.
 		prev_field_cfg_ptr->next_field = new_field;
-		prev_pfield_ptr->next_field = new_pfield;
 		// new field points to what was previously idx = field_idx
 		new_field->next_field = field_cfg_ptr;
-		new_pfield->next_field = pfield_ptr;
 	}
 
 	strncpy(new_field->fieldname, fieldname, MAX_FIELDNAME_LEN);
-	strncpy(new_pfield->fieldname, fieldname, MAX_FIELDNAME_LEN);
 	new_field->converter = converter_select;
 	new_field->dtype = dtype;
-	new_pfield->dtype = dtype;
 	new_field->sf = sf;
 	memcpy(new_field->bitmask, bitmask, MAX_BITMASK_LEN_BYTES);
 	new_field->num_bits = bits_in_bitmask(new_field->bitmask, cfg->num_bytes);
@@ -238,20 +196,16 @@ int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 {
 	if (field_idx >= cfg->num_fields) return 1;
 
-	struct parsed_field* pfield_ptr = cfg->first_pfield;
-	struct parsed_field* prev_pfield_ptr = NULL;
 	struct field_cfg* field_cfg_ptr = cfg->first_field;
 	struct field_cfg* prev_field_cfg_ptr = NULL;
 
 	for (uint32_t idx = 0; idx < field_idx; idx++)
 	{
-		prev_pfield_ptr = pfield_ptr;
-		pfield_ptr = pfield_ptr->next_field;
 
 		prev_field_cfg_ptr = field_cfg_ptr;
 		field_cfg_ptr = field_cfg_ptr->next_field;
 
-		if ((pfield_ptr == NULL) || (field_cfg_ptr == NULL)) return 1;
+		if (field_cfg_ptr == NULL) return 1;
 	}
 
 	if (cfg->num_fields > 1)
@@ -261,25 +215,21 @@ int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 		{	// if first field, need to re-link using 
 			// config pointer to first field.
 			cfg->first_field = field_cfg_ptr->next_field;
-			cfg->first_pfield = pfield_ptr->next_field;
 		}
 		else if (field_idx > 0)
 		{	// if fields greater than 0, we need to re-link
 			// previous field with next.
 			prev_field_cfg_ptr->next_field = field_cfg_ptr->next_field;
-			prev_pfield_ptr->next_field = pfield_ptr->next_field;
 		}
 	}
 	else
 	{	// if only one field to delete. NULL out
 		// first field.
 		cfg->first_field = NULL;
-		cfg->first_pfield = NULL;
 	}
 
 	// free allocated memory for field.
 	free(field_cfg_ptr);
-	free(pfield_ptr);
 
 	// decrement number of fields.
 	cfg->num_fields--;
@@ -303,22 +253,6 @@ struct field_cfg* get_field_cfg_by_name(struct msg_cfg* cfg, const char fieldnam
 	return NULL;
 }
 
-struct parsed_field* get_pfield_by_name(struct msg_cfg* cfg, const char fieldname[])
-{
-	struct parsed_field* pfield = cfg->first_pfield;
-
-	for (uint32_t idx = 0; idx < cfg->num_fields; idx++)
-	{
-		if (pfield == NULL) return NULL;
-		if ((strcmp(pfield->fieldname, fieldname) == 0)) return pfield;
-		// iterate and get next pfield
-		pfield = pfield->next_field;
-	}
-
-	printf("No field cfg %s found\n", fieldname);
-	return NULL;
-}
-
 int32_t rm_first_field(struct msg_cfg* cfg)
 {
 	// function needs rework.
@@ -326,24 +260,19 @@ int32_t rm_first_field(struct msg_cfg* cfg)
 	if (cfg->num_fields == 0) return 1; // nothing to delete
 
 	struct field_cfg* first_field_ptr = cfg->first_field;
-	struct parsed_field* first_pfield_ptr = cfg->first_pfield; // this field used to save pointer to 2nd element
 
 	if (cfg->num_fields > 1)
 	{
 		struct field_cfg* next_field_ptr = first_field_ptr->next_field;
-		struct parsed_field* next_pfield_ptr = first_pfield_ptr->next_field;
 		cfg->first_field = next_field_ptr; // re-link to what was 2nd field.
-		cfg->first_pfield = next_pfield_ptr;
 	}
 	else
 	{
 		cfg->first_field = NULL;
-		cfg->first_pfield = NULL;
 	}
 
-	if ((first_field_ptr == NULL) || (first_pfield_ptr == NULL)) return 1;
+	if (first_field_ptr == NULL) return 1;
 	free(first_field_ptr); // free memory allocated for deleted field.
-	free(first_pfield_ptr); // free memory for first pfield.
 
 	cfg->num_fields--; // decrement number of fields.
 

@@ -35,15 +35,9 @@ struct field_cfg {
 	uint8_t converter;
 	uint8_t dtype; // result will be typcast if not
 	double sf;
-	struct field_cfg* next_field;
-};
-
-// parsed field struct
-struct parsed_field {
-	char fieldname[MAX_FIELDNAME_LEN];
-	uint8_t dtype;
+	// below are parsed results
 	union parsed_result parsed_val;
-	struct parsed_field* next_field;
+	struct field_cfg* next_field;
 };
 
 /*=============================== Setup/Config Functions ======================================================*/
