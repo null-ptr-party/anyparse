@@ -70,7 +70,7 @@ int32_t prog_bar(uint32_t current, uint32_t max, uint32_t every)
 	static uint32_t call_cnt = 0;
 	if (!(call_cnt % every))
 	{
-		char str[PROGBAR_LEN] = "|_____________________________________|";
+		char str[PROGBAR_LEN] = "[_____________________________________]";
 		uint32_t prog = current * (PROGBAR_LEN - 1) / max;
 		for (uint32_t idx = 1; (idx < prog) && (idx < PROGBAR_LEN); idx++)
 		{
