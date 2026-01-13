@@ -36,7 +36,9 @@ int32_t update_fieldcfg_by_idx(struct msg_cfg* cfg, uint32_t field_idx,
 	const uint8_t bitmask[MAX_BITMASK_LEN_BYTES], const char fieldname[],
 	uint8_t converter_select, uint8_t dtype, double sf)
 {
+	if (cfg == NULL) return 1;
 	struct field_cfg* field = field_cfg_by_idx(cfg, field_idx);
+	if (field == NULL) return 1;
 	strncpy(field->fieldname, fieldname, MAX_FIELDNAME_LEN);
 	field->converter = converter_select;
 	field->dtype = dtype;
@@ -49,6 +51,7 @@ int32_t update_fieldcfg_by_idx(struct msg_cfg* cfg, uint32_t field_idx,
 // add field to message in position 0.
 int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[MAX_BITMASK_LEN_BYTES], const char fieldname[], uint8_t converter_select, uint8_t dtype, double sf)
 {
+	if (cfg == NULL) return 1;
 	// check for max num fields.
 	if (cfg->num_fields >= MAX_NUM_FIELDS)
 	{
@@ -90,7 +93,9 @@ int32_t add_field_to_msgcfg(struct msg_cfg* cfg, const uint8_t bitmask[MAX_BITMA
 
 struct field_cfg* field_cfg_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 {
+	if (cfg == NULL) return NULL;
 	if (field_idx >= cfg->num_fields) return NULL;
+
 	struct field_cfg* field_cfg_ptr = cfg->first_field;
 
 	for (uint32_t idx = 0; idx < field_idx; idx++)
@@ -106,6 +111,7 @@ int32_t append_field(struct msg_cfg* cfg,
 	uint8_t converter_select, uint8_t dtype,
 	double sf)
 {
+	if (cfg == NULL) return 1;
 	struct field_cfg* field = NULL;
 
 	if (cfg->num_fields != 0)
@@ -155,6 +161,7 @@ int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
 	uint8_t converter_select, uint8_t dtype,
 	double sf)
 {
+	if (cfg == NULL) return 1;
 	// Highest index a field can be added is n = num_fields-1
 	// anything higher should return error.
 	if (field_idx >= cfg->num_fields) return 1;
@@ -209,6 +216,7 @@ int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
 
 int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 {
+	if (cfg == NULL) return 1;
 	if (field_idx >= cfg->num_fields) return 1;
 
 	struct field_cfg* field_cfg_ptr = cfg->first_field;
@@ -254,6 +262,7 @@ int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx)
 
 struct field_cfg* get_field_cfg_by_name(struct msg_cfg* cfg, const char fieldname[])
 {
+	if (cfg == NULL) return NULL;
 	struct field_cfg* field_cfg = cfg->first_field;
 
 	for (uint32_t idx = 0; idx < cfg->num_fields; idx++)
