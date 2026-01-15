@@ -41,8 +41,8 @@ struct field_cfg {
 };
 
 /*=============================== Setup/Config Functions ======================================================*/
-// initialize message config
-int32_t init_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes, bool whend);
+// initialize message config struct
+int32_t init_msgcfg(struct msg_cfg* cfg);
 // update message configuration
 int32_t update_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes, bool whend);
 // update field configuration

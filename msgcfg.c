@@ -8,14 +8,11 @@
 #include <ctype.h>
 
 /*=============================== Setup Functions ======================================================*/
-int32_t init_msgcfg(struct msg_cfg* cfg, char fieldname[], uint8_t num_bytes, bool whend)
+int32_t init_msgcfg(struct msg_cfg* cfg)
 {
 	// Note that number of fields is incremented as fields are added.
 	if (cfg == NULL) return 1;
-	strncpy(cfg->messagename, fieldname, MAX_FIELDNAME_LEN);
-	cfg->num_bytes = num_bytes;
 	cfg->num_fields = 0;
-	cfg->whend = whend;
 	cfg->first_field = NULL;
 	return 0;
 }
