@@ -115,15 +115,7 @@ union parsed_result read_ieee_fp(uint64_t raw_bits, uint8_t num_bits, uint8_t dt
 
 union parsed_result read_char(uint64_t raw_bits)
 {
-	union parsed_result result = { .int_result = 0 };
-
-	char* char_ptr = (char*)&raw_bits;
-
-	for (uint8_t idx = 0; idx < 8; idx++, char_ptr++)
-	{
-		result.char_result[idx] = *char_ptr;
-	}
-
+	union parsed_result result = { .uint_result = raw_bits };
 	return result;
 }
 
