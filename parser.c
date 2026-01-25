@@ -164,7 +164,7 @@ int32_t parsed_msg_to_file(FILE* output_file, struct msg_cfg* cfg, uint8_t newli
 				break;
 
 			case DTYPE_OUT_CHAR:
-				fprintf(output_file, "%c", field_ptr->parsed_val.char_result[0]);
+				fprintf(output_file, "%c", field_ptr->parsed_val.char_result);
 				break;
 
 			case DTYPE_OUT_UINT:
