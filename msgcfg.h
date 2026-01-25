@@ -65,12 +65,8 @@ int32_t add_field_at_idx(struct msg_cfg* cfg, uint32_t field_idx,
 	double sf);
 // remove specific field by index.
 int32_t rm_field_by_idx(struct msg_cfg* cfg, uint32_t field_idx);
-// get parsed field by index
-struct parsed_field* pfield_by_idx(struct msg_cfg* cfg, uint32_t field_idx);
 // get field config by name
 struct field_cfg* get_field_cfg_by_name(struct msg_cfg* cfg, const char fieldname[]);
-// get parsed field by name
-struct parsed_field* get_pfield_by_name(struct msg_cfg* cfg, const char fieldname[]);
 // Remove the first field of message config.
 int32_t rm_first_field(struct msg_cfg* cfg);
 // Remove all fields from message config.
