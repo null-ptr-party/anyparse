@@ -26,7 +26,7 @@ union parsed_result {
 	int64_t int_result;
 	uint64_t uint_result;
 	double float_result;
-	char char_result[4];
+	char char_result[8];
 };
 
 /*=============================== Converters ===========================================================*/
