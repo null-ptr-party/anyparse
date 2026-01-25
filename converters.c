@@ -119,7 +119,7 @@ union parsed_result read_char(uint64_t raw_bits)
 
 	char* char_ptr = (char*)&raw_bits;
 
-	for (uint8_t idx = 0; idx < 4; idx++, char_ptr++)
+	for (uint8_t idx = 0; idx < 8; idx++, char_ptr++)
 	{
 		result.char_result[idx] = *char_ptr;
 	}
